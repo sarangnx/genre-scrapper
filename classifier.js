@@ -6,21 +6,10 @@ const path = require('path');
 let input_directory  = path.resolve('..','songs','input');
 let output_directory = path.resolve('..','songs','output');
 
-/**
- * @var metadata contains array of objects
- * [ { title, artist, path, filename } ]
- */
-let metadata = [];
-
-/**
- * List songs in input_directory
- * -- Input directory must contain files only.
- *    NO DIRECTORIES
- */
-
-fs.readdir(input_directory,(err, files) => {
+async function scanDir(files){
+    let metadata = [];
     for(let file of files){
-        let song = path.join(input_directory,file); 
+        let song = path.join(input_directory,file);
 
         // for extracting metadata using mm
         let readable = fs.createReadStream(song);
@@ -28,6 +17,14 @@ fs.readdir(input_directory,(err, files) => {
          * extract title, artist from song file,
          * add it to metadata array.
          */
+        let meta = await getMeta(readable,song,file);
+        metadata.push(meta);
+    }
+    return metadata;
+}
+
+function getMeta(readable,song,file){
+    return new Promise((resolve,reject)=>{
         mm(readable, (err, data) => {
             let element = {
                 title: data.title,
@@ -35,10 +32,15 @@ fs.readdir(input_directory,(err, files) => {
                 path: song,
                 filename: file
             }
-            metadata.push(element);
+            resolve(element);
         });
-    }
-});
+    });
+}
+
+let files = fs.readdirSync(input_directory);
+scanDir(files).then((list)=>{
+    console.log(list);
+})
 
 // let string = 'eminem beautiful genre';
 // let qstring = encodeURIComponent(string);
