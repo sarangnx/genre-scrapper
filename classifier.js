@@ -1,4 +1,4 @@
-// const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer');
 const mm = require('musicmetadata');
 const fs = require('fs');
 const path = require('path');
@@ -37,13 +37,35 @@ function getMeta(readable,song,file){
     });
 }
 
+function search(query){
+
+}
+
 let files = fs.readdirSync(input_directory);
+
 scanDir(files).then((list)=>{
-    console.log(list);
+
+    
+    puppeteer.launch().then(async (browser) => {
+        const page = await browser.newPage();
+
+        list.forEach(async (element)=>{
+            let string = element.title + element.artist + "genre";
+            let qstring = encodeURIComponent(string);
+
+            await page.goto('https://www.google.com/search?q='+qstring);
+            // console.log(await page.content());
+            let con = await page.$eval('.Z0LcW',el => el.innerHTML );            
+            console.log(element.title+" : "+con);
+        });
+        
+    }).catch((err) => {
+        console.log("GOD DAMN..!!");
+    });
+    
 })
 
-// let string = 'eminem beautiful genre';
-// let qstring = encodeURIComponent(string);
+
 
 // puppeteer.launch().then(async (browser) => {
 //     const page = await browser.newPage();
