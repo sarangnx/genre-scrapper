@@ -49,14 +49,19 @@ scanDir(files).then((list)=>{
     puppeteer.launch().then(async (browser) => {
         const page = await browser.newPage();
 
-        list.forEach(async (element)=>{
+        list.forEach( (element) => {
             let string = element.title + element.artist + "genre";
             let qstring = encodeURIComponent(string);
 
-            await page.goto('https://www.google.com/search?q='+qstring);
-            // console.log(await page.content());
-            let con = await page.$eval('.Z0LcW',el => el.innerHTML );            
-            console.log(element.title+" : "+con);
+            page.goto('https://www.google.com/search?q='+qstring).then(
+                () => {
+                    page.$eval('.Z0LcW',el => el.innerHTML).then(
+                        (genre) => {
+                            console.log(element.title + " : " + genre);
+                        }
+                    );
+                }
+            )
         });
         
     }).catch((err) => {
@@ -77,23 +82,3 @@ scanDir(files).then((list)=>{
 // }).catch((err) => {
 //     console.log("GOD DAMN..!!");
 // });
-
-
-// page.$(selector)
-// page.content()
-// page.goto(url[, options])
-
-
-
-
-/**
- * [ single genre ]
- * - Z0LcW
- * [ multiple genres ]
- *  
- * - rl_container
- *    - TZNJBf
- *        - IAznY
- *            - title
- */
-
