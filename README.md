@@ -12,7 +12,7 @@ Search results with single genre has the genre text in element with class **Z0Lc
 Search results with multiple genres has each genre text in the following pattern :
 
 ```html
-<div class="rl_container">
+<div class="hFvVJe">
     <div class = "TZNJBf" > 
         <div class = "IAznY" >
             <div class = "title" >

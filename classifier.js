@@ -46,39 +46,41 @@ let files = fs.readdirSync(input_directory);
 scanDir(files).then((list)=>{
 
     
-    puppeteer.launch().then(async (browser) => {
-        const page = await browser.newPage();
-
+    puppeteer.launch().then( (browser) => {
+        // const page = await browser.newPage();
         list.forEach( (element) => {
-            let string = element.title + element.artist + "genre";
-            let qstring = encodeURIComponent(string);
-
-            page.goto('https://www.google.com/search?q='+qstring).then(
-                () => {
-                    page.$eval('.Z0LcW',el => el.innerHTML).then(
-                        (genre) => {
+            browser.newPage().then( (page) => {            
+                let string = element.title + " " + element.artist + " genre";
+                let qstring = encodeURIComponent(string);
+    
+                page.goto('https://www.google.com/search?q='+qstring).then( () => {
+                    page.$eval('.Z0LcW',el => el.innerHTML).then( (genre) => {
                             console.log(element.title + " : " + genre);
-                        }
-                    );
-                }
-            )
+                            page.close();
+                    }).catch( ()=> {
+                        console.log(`${element.title} : not single genre`);
+                    }); 
+                    
+                    page.$$eval('.hFvVJe .TZNJBf .IAznY .title',
+                        nodes => nodes.map(n => n.innerHTML) ).then( (genreArray) => {
+                            console.log(genreArray);
+                            page.close();
+                        }).catch( () => {
+                            console.log("Level 2 error");
+                            page.close();
+                        });       
+                    }).catch( (err) => {
+                        console.log(element.title + " : ERROR" );
+                        page.close();
+                    });
+
+            }).catch( ()=> {
+                console.log("Brower Error");
+            });
         });
-        
+        // browser.close();
     }).catch((err) => {
         console.log("GOD DAMN..!!");
     });
     
 })
-
-
-
-// puppeteer.launch().then(async (browser) => {
-//     const page = await browser.newPage();
-//     await page.goto('https://www.google.com/search?q='+qstring);
-//     // console.log(await page.content());
-//     let con = await page.$eval('.Z0LcW',el => el.innerHTML );
-//     console.log(con);
-//     await browser.close();
-// }).catch((err) => {
-//     console.log("GOD DAMN..!!");
-// });
