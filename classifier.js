@@ -6,7 +6,7 @@ const path = require('path');
 let input_directory  = path.resolve('..','songs','input');
 let output_directory = path.resolve('..','songs','output');
 
-async function scanDir(files){
+async function scanDir(files,input_directory){
     let metadata = [];
     for(let file of files){
         let song = path.join(input_directory,file);
@@ -43,9 +43,8 @@ function search(query){
 
 let files = fs.readdirSync(input_directory);
 
-scanDir(files).then((list)=>{
+scanDir(files,input_directory).then((list)=>{
 
-    
     puppeteer.launch().then( (browser) => {
         // const page = await browser.newPage();
         list.forEach( (element) => {
@@ -54,28 +53,34 @@ scanDir(files).then((list)=>{
                 let qstring = encodeURIComponent(string);
     
                 page.goto('https://www.google.com/search?q='+qstring).then( () => {
-                    page.$eval('.Z0LcW',el => el.innerHTML).then( (genre) => {
-                            console.log(element.title + " : " + genre);
+                    page.$eval('.kp-header .Z0LcW',el => el.innerHTML).then( 
+                        //Resolve
+                        (genre) => {
+                            console.log("[S]" + element.title + " : " + genre);
                             page.close();
-                    }).catch( ()=> {
-                        console.log(`${element.title} : not single genre`);
-                    }); 
-                    
-                    page.$$eval('.hFvVJe .TZNJBf .IAznY .title',
-                        nodes => nodes.map(n => n.innerHTML) ).then( (genreArray) => {
-                            console.log(genreArray);
-                            page.close();
-                        }).catch( () => {
-                            console.log("Level 2 error");
-                            page.close();
-                        });       
-                    }).catch( (err) => {
-                        console.log(element.title + " : ERROR" );
-                        page.close();
+                        },
+                        //Reject
+                        () => {
+                            page.$$eval('.hFvVJe .TZNJBf .IAznY .title',
+                                nodes => nodes.map(n => n.innerHTML) ).then( (genreArray) => {
+                                    if(genreArray.length == 0){
+                                        throw new Error('No Genres found');
+                                    }
+                                    console.log("[M]" + element.title + " : " + genreArray);
+                                    page.close();
+                            }).catch( () => {
+                                console.log("Failed to find genre.");
+                                page.close();
+                            });
+                        }
+                    ).catch( () => {
+                        console.log("Failed to find genre.");
                     });
-
+                }).catch( ()=> {
+                    console.log("Page Navigation Error")    
+                }); 
             }).catch( ()=> {
-                console.log("Brower Error");
+                console.log("Browser Error");
             });
         });
         // browser.close();

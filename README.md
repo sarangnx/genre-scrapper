@@ -6,7 +6,13 @@ Using Puppeteer to scrape the web, essentially cards in Google search result onl
     
 Search results with single genre has the genre text in element with class **Z0LcW**
 ```html
-<div class = "Z0LcW" > Hip-Hop/Rap </div>
+<div class = "kp-header">
+    ...
+    <div class = "Z0LcW" > 
+        Hip-Hop/Rap 
+    </div>
+    ...
+</div>
 ```
 
 Search results with multiple genres has each genre text in the following pattern :
