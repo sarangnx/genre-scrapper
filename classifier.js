@@ -41,7 +41,7 @@ function getMeta(readable,song,file){
 }
 
 function printDetails(total,waiting,finished,errors = 0){
-    let width = Math.floor( process.stdout.columns * .5 );
+    let width = Math.floor( process.stdout.columns * .8 );
     process.stdout.cursorTo(0,3);
     process.stdout.clearLine();
     let fpercent = Math.floor( ( finished / total ) * width );
@@ -54,7 +54,24 @@ function printDetails(total,waiting,finished,errors = 0){
                 ` ${finished} / \u001B[1;32m${total} \u001B[0;0m    ` + 
                 `\u001B[1;31mErrors : \u001B[0;0m ${errors}`;
     console.log(output);
+    process.stdout.clearLine();
 }
+
+function moveToDir(dirname,outpath,meta){
+    dirname = dirname.replace("/","+");
+    let fullpath = path.resolve(outpath,dirname);
+    // if ( !fs.fstatSync(fullpath).isDirectory() ){
+    //     fs.mkdirSync(fullpath);
+    // }
+    // let outfile = path.resolve(fullpath,meta.filename)
+    // fs.rename(meta.path,outfile,(err) => {
+    //     if(err){
+    //         throw err;
+    //     }
+    //     console.log(` ${INFO} ${meta.filename} moved successfully.`);
+    // })
+}
+
 process.stdout.cursorTo(0,0);
 process.stdout.clearScreenDown();
 let files = fs.readdirSync(input_directory);
@@ -84,6 +101,7 @@ scanDir(files,input_directory).then((list)=>{
                             finished++;
                             printDetails(total,waiting,finished,errors);
                             console.log(` ${INFO} ${element.title}  :  ${genre}`);
+                            moveToDir(genre,output_directory,element);
                         },
                         //Reject
                         () => {
