@@ -60,16 +60,18 @@ function printDetails(total,waiting,finished,errors = 0){
 function moveToDir(dirname,outpath,meta){
     dirname = dirname.replace("/","+");
     let fullpath = path.resolve(outpath,dirname);
-    // if ( !fs.fstatSync(fullpath).isDirectory() ){
-    //     fs.mkdirSync(fullpath);
-    // }
-    // let outfile = path.resolve(fullpath,meta.filename)
-    // fs.rename(meta.path,outfile,(err) => {
-    //     if(err){
-    //         throw err;
-    //     }
-    //     console.log(` ${INFO} ${meta.filename} moved successfully.`);
-    // })
+    fs.mkdir(fullpath,(err) => {
+        if(err && err.code != 'EEXIST'){
+            throw err;
+        }
+        let outfile = path.resolve(fullpath,meta.filename);
+        fs.rename(meta.path,outfile,(err) => {
+            if(err){
+                throw err;
+            }
+            console.log(` ${INFO} ${meta.filename} moved successfully.`);
+        });
+    });
 }
 
 process.stdout.cursorTo(0,0);
@@ -116,6 +118,7 @@ scanDir(files,input_directory).then((list)=>{
                                     page.close();
                                     finished++;
                                     printDetails(total,waiting,finished,errors);
+                                    // copyToDir(genre,output_directory,element);
                                     console.log(` ${INFO} ${element.title} : ${genreArray}`);
                             }).catch( () => {
                                 page.close();
