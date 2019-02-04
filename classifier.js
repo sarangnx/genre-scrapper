@@ -66,9 +66,11 @@ function printDetails(total,waiting = 0,finished = 0,errors = 0){
     process.stdout.cursorTo(0,3);
     process.stdout.clearLine();
     let fpercent = Math.floor( ( finished / total ) * width );
-    let wpercent = Math.floor( ( waiting / total ) * width  );
+    let wpercent = Math.ceil( ( waiting / total ) * width  );
+    let epercent = Math.floor( ( errors / total ) * width  );
     let progressbar = "\u001B[1;42m ".repeat(fpercent) + 
-                    "\u001B[1;47m ".repeat(wpercent - fpercent) + 
+                    "\u001B[1;41m ".repeat(epercent) + 
+                    "\u001B[1;47m ".repeat(wpercent - ( fpercent + epercent ) )  + 
                     "\u001B[0;0m";
     console.log(progressbar);
     let output = `\u001B[1;32mFinished : \u001B[0;0m` +
@@ -194,14 +196,12 @@ scanDir(files,input_directory).then((list)=>{
                         }
                     ).catch( () => {
                         page.close();
-                        finished++;
                         errors++;
                         printDetails(total,waiting,finished,errors);
                         console.log(` ${ERR} Failed to find genre.`);
                     });
                 }).catch( ()=> {
                     errors++;
-                    finished++;
                     page.close();
                     printDetails(total,waiting,finished,errors);
                     console.log(` ${ERR} Page Navigation Error`);
