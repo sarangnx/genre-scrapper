@@ -9,6 +9,11 @@ let output_directory = path.resolve('..','songs','output');
 const INFO = "\u001B[1;36m [ INFO ] \u001B[0;0m";
 const ERR  = "\u001B[1;31m [ ERROR ] \u001B[0;0m";
 
+/**
+ * Function to extract data from all the files in the input directory
+ * @param {Array} files - List of Files in input_directory.
+ * @param {String} input_directory - Path to input directory.
+ */
 async function scanDir(files,input_directory){
     let metadata = [];
     for(let file of files){
@@ -26,6 +31,13 @@ async function scanDir(files,input_directory){
     return metadata;
 }
 
+/**
+ * Get Metadata of songs using 'musicmetadata' library.
+ * @param {stream} readable - Read Stream to song file.
+ * @param {string} song - Full path of the song file.
+ * @param {string} file - Filename of the song.
+ */
+
 function getMeta(readable,song,file){
     return new Promise((resolve,reject)=>{
         mm(readable, (err, data) => {
@@ -39,6 +51,15 @@ function getMeta(readable,song,file){
         });
     });
 }
+
+/**
+ * Print Output of functions performed.
+ * To visualize progress.
+ * @param {Number} total - Number of total files.
+ * @param {Number} waiting  - Number of files started to search.
+ * @param {Number} finished - Number of files finished search.
+ * @param {Number} errors  - Number of files with no genre match.
+ */
 
 function printDetails(total,waiting,finished,errors = 0){
     let width = Math.floor( process.stdout.columns * .8 );
@@ -57,6 +78,13 @@ function printDetails(total,waiting,finished,errors = 0){
     process.stdout.clearLine();
 }
 
+/**
+ * Used for Single Genre songs.
+ * Move Song Files whose genre are identified to respective deirectories. 
+ * @param {String} dirname - Genre Name. New Directories to be created.
+ * @param {String} outpath - Main output directory.
+ * @param {Object} meta - Object containing details of a song.
+ */
 function moveToDir(dirname,outpath,meta){
     dirname = dirname.replace("/","+");
     let fullpath = path.resolve(outpath,dirname);
@@ -69,7 +97,34 @@ function moveToDir(dirname,outpath,meta){
             if(err){
                 throw err;
             }
-            console.log(` ${INFO} ${meta.filename} moved successfully.`);
+            // console.log(` ${INFO} ${meta.filename} moved successfully.`);
+        });
+    });
+}
+
+/**
+ * Used for Multiple Genre songs.
+ * Copy files whose genres are identified to respective directories,
+ * and delete source file from input directory.
+ * @param {Array} dirnames - Genre Names.
+ * @param {String} outpath - Main output directory.
+ * @param {Object} meta - Object containing details of a song.
+ */
+function copyToDir(dirnames,outpath,meta){
+    dirnames.forEach( (dirname) => {
+        dirname = dirname.replace("/","+");
+        let fullpath = path.resolve(outpath,dirname);
+        fs.mkdir(fullpath,(err) => {
+            if(err && err.code != 'EEXIST'){
+                throw err;
+            }
+            let outfile = path.resolve(fullpath,meta.filename);
+            fs.copyFile(meta.path,outfile,(err) => {
+                if(err){
+                    throw err;
+                }
+                // console.log(` ${INFO} ${meta.filename} moved successfully.`);
+            });
         });
     });
 }
@@ -118,7 +173,7 @@ scanDir(files,input_directory).then((list)=>{
                                     page.close();
                                     finished++;
                                     printDetails(total,waiting,finished,errors);
-                                    // copyToDir(genre,output_directory,element);
+                                    copyToDir(genre,output_directory,element);
                                     console.log(` ${INFO} ${element.title} : ${genreArray}`);
                             }).catch( () => {
                                 page.close();
