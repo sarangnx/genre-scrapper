@@ -183,7 +183,7 @@ scanDir(files,input_directory).then((list)=>{
                                     page.close();
                                     finished++;
                                     printDetails(total,waiting,finished,errors);
-                                    copyToDir(genre,output_directory,element);
+                                    copyToDir(genreArray,output_directory,element);
                                     console.log(` ${INFO} ${element.title} : ${genreArray}`);
                             }).catch( () => {
                                 page.close();
