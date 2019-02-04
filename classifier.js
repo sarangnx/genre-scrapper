@@ -61,7 +61,7 @@ function getMeta(readable,song,file){
  * @param {Number} errors  - Number of files with no genre match.
  */
 
-function printDetails(total,waiting,finished,errors = 0){
+function printDetails(total,waiting = 0,finished = 0,errors = 0){
     let width = Math.floor( process.stdout.columns * .8 );
     process.stdout.cursorTo(0,3);
     process.stdout.clearLine();
@@ -111,6 +111,8 @@ function moveToDir(dirname,outpath,meta){
  * @param {Object} meta - Object containing details of a song.
  */
 function copyToDir(dirnames,outpath,meta){
+    let total = dirnames.length;
+    let finished = 0;
     dirnames.forEach( (dirname) => {
         dirname = dirname.replace("/","+");
         let fullpath = path.resolve(outpath,dirname);
@@ -122,6 +124,14 @@ function copyToDir(dirnames,outpath,meta){
             fs.copyFile(meta.path,outfile,(err) => {
                 if(err){
                     throw err;
+                }
+                finished++;
+                if(finished == total){
+                    fs.unlink(meta.path, (err) => {
+                        if(err){
+                            throw err;
+                        }
+                    })
                 }
                 // console.log(` ${INFO} ${meta.filename} moved successfully.`);
             });
@@ -177,7 +187,6 @@ scanDir(files,input_directory).then((list)=>{
                                     console.log(` ${INFO} ${element.title} : ${genreArray}`);
                             }).catch( () => {
                                 page.close();
-                                finished++;
                                 errors++;
                                 printDetails(total,waiting,finished,errors);
                                 console.log(` ${ERR} Failed to find genre.`);
