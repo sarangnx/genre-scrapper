@@ -92,16 +92,20 @@ function moveToDir(dirname,outpath,meta){
     let fullpath = path.resolve(outpath,dirname);
     fs.mkdir(fullpath,(err) => {
         if(err && err.code != 'EEXIST'){
-            throw err;
+            process.stdout.clearLine();
+            console.log(` ${ERR} Directory Name Error.`);
+            return;
         }
         let outfile = path.resolve(fullpath,meta.filename);
         fs.rename(meta.path,outfile,(err) => {
             if(err){
-                throw err;
+                process.stdout.clearLine();
+                console.log(` ${ERR} File not Moved.`);
+                return;
             }
             // console.log(` ${INFO} ${meta.filename} moved successfully.`);
         });
-    });
+    });    
 }
 
 /**
@@ -120,18 +124,22 @@ function copyToDir(dirnames,outpath,meta){
         let fullpath = path.resolve(outpath,dirname);
         fs.mkdir(fullpath,(err) => {
             if(err && err.code != 'EEXIST'){
-                throw err;
+                process.stdout.clearLine();
+                console.log(` ${ERR} Directory Name Error.`);
+                return;
             }
             let outfile = path.resolve(fullpath,meta.filename);
             fs.copyFile(meta.path,outfile,(err) => {
                 if(err){
-                    throw err;
+                    process.stdout.clearLine();
+                    console.log(` ${ERR} File not copied.`);
+                    return;
                 }
                 finished++;
                 if(finished == total){
                     fs.unlink(meta.path, (err) => {
                         if(err){
-                            throw err;
+                            console.log(` ${ERR} File not Deleted.`);
                         }
                     })
                 }
