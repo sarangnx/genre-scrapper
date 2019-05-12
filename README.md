@@ -49,3 +49,8 @@ Run:
 ```bash
 node classifier.js
 ```
+
+# ISSUES
+
+![Robot]
+(robot.jpg)
