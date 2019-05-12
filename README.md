@@ -52,5 +52,4 @@ node classifier.js
 
 # ISSUES
 
-![Robot]
-(robot.jpg)
+![Robot](robot.jpg)
